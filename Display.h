@@ -18,6 +18,8 @@ class Display {
   int get_brightness(){return current_bightness;};
   static void loop(void * parameter);
   void show_humidity();
+  void set_bracket(bool input_bracket){bracket=input_bracket;};
+  bool get_bracket(){return bracket;};
   struct CHSV active_color(bool debug=false);
 
  private:

@@ -1,4 +1,5 @@
 #include <WiFi.h>
+#include <Preferences.h>
 #include <ESPmDNS.h>
 #include <SPIFFS.h>
 #include <NTPClient.h>
@@ -26,7 +27,7 @@ MAX44009 light;
 #define BUILTIN_LED 33
 #define FLASH_LED 4
 //#define HOSTIDENTIFY  "NSLClock"
-//#define HOSTIDENTIFY  "RGBClock"
+#define HOSTIDENTIFY  "RGBClock"
 #define mDNSUpdate(c)  do {} while(0)
 // Fix hostname for mDNS. It is a requirement for the lightweight update feature.
 static const char* host = HOSTIDENTIFY;
@@ -94,6 +95,7 @@ void process_lux(){
 void setup() {
   extern BMESensor *bme;
   bool result = false;
+  Preferences preferences;
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   Serial.begin(115200);
   Serial.setDebugOutput(true);
@@ -110,8 +112,6 @@ void setup() {
   AsyncWiFiManager wifiManager(&server,&dns);
   wifiManager.setAPCallback(configModeCallback);
   
-//  wifiManager.resetSettings(); //reset settings - for testing
-//  result = wifiManager.startConfigPortal(APNAME, APPASSWORD);
   result = wifiManager.autoConnect(APNAME, APPASSWORD);
   if( result ) {
     if (MDNS.begin(host)) {
@@ -126,28 +126,47 @@ void setup() {
     });
  
     server.on("/rand", HTTP_GET, [](AsyncWebServerRequest *request){
-      request->send(200, "text/plain", String(random(1000)));
+      request->send(200, "text/plain", String(random(8)));
     });
  
     server.on("/state", HTTP_GET, [](AsyncWebServerRequest *request){
       char state[500];
 
-      sprintf(state, "{'time': '%i:%02d:%02d', 'temperature': '%i', 'humidity': '%f', 'pressure': '%f', 'lux': '%f', 'brightness': '%i', 'max_lux': '%f', 'min_brightness': '%i'}",
+      sprintf(state, "{'time': '%i:%02d:%02d', 'temperature': '%i', 'humidity': '%f', 'pressure': '%f', 'lux': '%f', 'brightness': '%i', 'max_lux': '%f', 'min_brightness': '%i'', 'closed': '%s'}",
                         timeutil.clock_hour(), timeutil.clock_min(), timeutil.clock_sec(),
                         bme->get_tempatureF(), 
                         bme->get_humidity() / 1000.0F,
                         bme->get_pressure() / 3386.0F,
                         current_lux,
-                        calculate_brightness(), max_lux, min_brightness
+                        calculate_brightness(), max_lux, min_brightness, 
+                        clock_display.get_bracket() ? "true" : "false"
                         );
       request->send(200, "application/json", String(state));
     });
+ 
+    server.on("/open", HTTP_GET, [](AsyncWebServerRequest *request){
+      clock_display.set_bracket(false);
+      request->send(200, "text/plain", "Open!");
+    });
+ 
+    server.on("/closed", HTTP_GET, [](AsyncWebServerRequest *request){
+      clock_display.set_bracket(true);
+      request->send(200, "text/plain", "Closed!");
+    });
+    
+    server.on("/set", HTTP_GET, setVars);
+//    server.on("/bmp", HTTP_GET, sendBMP);
 //    server.on("/bmp", HTTP_GET, sendBMP);
 //    server.on("/capture", HTTP_GET, sendJpg);
 //    server.on("/stream", HTTP_GET, streamJpg);
 //    server.on("/control", HTTP_GET, setCameraVar);
 //    server.on("/status", HTTP_GET, getCameraStatus);
    
+    preferences.begin("rgb_clock", false);
+    min_brightness = int(preferences.getLong("min_brightness", 5));
+    max_lux = preferences.getFloat("max_lux", 15);
+    preferences.end();
+    
     Wire.begin(I2C_SDA, I2C_SCL); // Init Wire for i2c
     bme = new BMESensor();
     process_lux();
@@ -195,4 +214,35 @@ void loop() {
   }
   delay(1);
   loop_counter++;
+}
+
+void setVars(AsyncWebServerRequest *request){
+    if(!request->hasArg("var") || !request->hasArg("val")){
+        request->send(404);
+        return;
+    }
+    String var = request->arg("var");
+    const char * variable = var.c_str();
+    Serial.print("[");
+    Serial.print(var);
+    Serial.print("] = [");
+    Serial.print(request->arg("val") );
+    Serial.println("]");
+    
+//    int val = atoi(request->arg("val").c_str());
+//    int res = 0;
+//    if(!strcmp(variable, "framesize")) res = s->set_framesize(s, (framesize_t)val);
+//    else if(!strcmp(variable, "quality")) res = s->set_quality(s, val);
+//    else if(!strcmp(variable, "contrast")) res = s->set_contrast(s, val);
+//
+//    else {
+//        log_e("unknown setting %s", var.c_str());
+//        request->send(404);
+//        return;
+//    }
+//    log_d("Got setting %s with value %d. Res: %d", var.c_str(), val, res);
+
+    AsyncWebServerResponse * response = request->beginResponse(200);
+    response->addHeader("Access-Control-Allow-Origin", "*");
+    request->send(response);
 }
