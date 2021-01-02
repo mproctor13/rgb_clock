@@ -26,8 +26,7 @@ MAX44009 light;
 #define APPASSWORD "nsl_clock"
 #define BUILTIN_LED 33
 #define FLASH_LED 4
-//#define HOSTIDENTIFY  "NSLClock"
-#define HOSTIDENTIFY  "RGBClock"
+#define HOSTIDENTIFY  "NSLClock"
 #define mDNSUpdate(c)  do {} while(0)
 // Fix hostname for mDNS. It is a requirement for the lightweight update feature.
 static const char* host = HOSTIDENTIFY;
