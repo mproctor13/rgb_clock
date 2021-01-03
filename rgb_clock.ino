@@ -35,6 +35,7 @@ int LUX_NOT_FOUND = true;
 bool SERIAL_DEBUG = true;
 int min_brightness = 5;
 float max_lux = 15;
+int display_offset = -5;
 
 #include "Display.h"
 Display clock_display;
@@ -131,9 +132,10 @@ void setup() {
     server.on("/state", HTTP_GET, [](AsyncWebServerRequest *request){
       char state[500];
 
-      sprintf(state, "{'time': '%i:%02d:%02d', 'temperature': '%i', 'humidity': '%f', 'pressure': '%f', 'lux': '%f', 'brightness': '%i', 'max_lux': '%f', 'min_brightness': '%i'', 'closed': '%s'}",
+      sprintf(state, "{'time': '%i:%02d:%02d', 'temperature': '%i', 'temperatureC': '%i', 'humidity': '%f', 'pressure': '%f', 'lux': '%f', 'brightness': '%i', 'max_lux': '%f', 'min_brightness': '%i'', 'closed': '%s'}",
                         timeutil.clock_hour(), timeutil.clock_min(), timeutil.clock_sec(),
                         bme->get_tempatureF(), 
+                        bme->get_tempatureC(), 
                         bme->get_humidity() / 1000.0F,
                         bme->get_pressure() / 3386.0F,
                         current_lux,
@@ -151,6 +153,10 @@ void setup() {
     server.on("/closed", HTTP_GET, [](AsyncWebServerRequest *request){
       clock_display.set_bracket(true);
       request->send(200, "text/plain", "Closed!");
+    });
+ 
+    server.on("/color", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(200, "text/plain", clock_display.active_color_html());
     });
     
     server.on("/set", HTTP_GET, setVars);

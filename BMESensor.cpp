@@ -13,7 +13,8 @@ int BMESensor::get_tempature(){
   return tempature;
 }
 int BMESensor::get_tempatureF(){
-  return 1.8 * (tempature/100) + 32;
+  extern int display_offset;
+  return (1.8 * (tempature/100) + 32)+display_offset;
 }
 int BMESensor::get_tempatureC(){
   return tempature/100;

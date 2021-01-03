@@ -117,6 +117,15 @@ struct CHSV Display::active_color(bool debug){
   return CHSV(color_set[color], 255, current_bightness);
 }
 
+char *Display::active_color_html(){
+  CRGB crgb;
+
+  hsv2rgb_rainbow(active_color(), crgb);
+      
+  sprintf(color,"#%02X%02X%02X", crgb.red, crgb.green, crgb.blue);
+  return color;
+}
+
 void Display::show_temp(bool celsius){
   extern BMESensor *bme;
   int tempature;
@@ -352,9 +361,7 @@ void Display::nextPattern(){
 }
 
 void Display::rotate_color(){
-//  int t = int(125+float(current_bightness/255)*125.0);
-//  Serial.print("show brightness: ");
-//  Serial.println(t);
+  show_brightness = int(125+float(current_bightness/255)*125.0);
   if(bracket){
     fill_solid(pixels, show_pixels, CHSV(labelHue, 255, show_brightness));
   }

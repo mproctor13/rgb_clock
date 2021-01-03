@@ -21,6 +21,8 @@ class Display {
   void set_bracket(bool input_bracket){bracket=input_bracket;};
   bool get_bracket(){return bracket;};
   struct CHSV active_color(bool debug=false);
+  char *active_color_html();
+  char *get_text();
 
  private:
   CRGB *pixels;
@@ -34,6 +36,8 @@ class Display {
   uint8_t current_bightness =5;
   uint8_t show_brightness;
   uint8_t color_set[8] = {0, 192, 64, 96, 160, 128, 32, 224};
+  char color[10];
+  char text[10];
   
   uint8_t labelHue = 0;
   uint8_t currentPatternNumber = 0;
