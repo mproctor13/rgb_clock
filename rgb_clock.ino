@@ -7,6 +7,8 @@
 #include <ESPAsyncWebServer.h>
 #include <ESPAsyncWiFiManager.h>
 #include <AsyncElegantOTA.h>
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
 
 #define I2C_SDA 15
 #define I2C_SCL 14
@@ -34,7 +36,7 @@ static const char* host = HOSTIDENTIFY;
 int LUX_NOT_FOUND = true;
 bool SERIAL_DEBUG = true;
 int min_brightness = 5;
-float max_lux = 15;
+float max_lux = 13;
 int display_offset = -5;
 
 #include "Display.h"
@@ -95,6 +97,7 @@ void process_lux(){
 void setup() {
   extern BMESensor *bme;
   bool result = false;
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
   Preferences preferences;
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   Serial.begin(115200);
