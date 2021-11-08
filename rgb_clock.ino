@@ -135,7 +135,7 @@ void setup() {
     server.on("/state", HTTP_GET, [](AsyncWebServerRequest *request){
       char state[500];
 
-      sprintf(state, "{'time': '%i:%02d:%02d', 'temperature': '%i', 'temperatureC': '%i', 'humidity': '%f', 'pressure': '%f', 'lux': '%f', 'brightness': '%i', 'max_lux': '%f', 'min_brightness': '%i'', 'closed': '%s'}",
+      sprintf(state, "{\"time\": \"%i:%02d:%02d\", \"temperature\": \"%i\", \"temperatureC\": \"%i\", \"humidity\": \"%f\", \"pressure\": \"%f\", \"lux\": \"%f\", \"brightness\": \"%i\", \"max_lux\": \"%f\", \"min_brightness\": \"%i\", \"closed\": \"%s\"}",
                         timeutil.clock_hour(), timeutil.clock_min(), timeutil.clock_sec(),
                         bme->get_tempatureF(), 
                         bme->get_tempatureC(), 
