@@ -203,7 +203,6 @@ void setup() {
 int loop_counter=0;
 BMESensor *bme;
 void loop() {
-  AsyncElegantOTA.loop();
   if(loop_counter % 5000 == 0){
     bme->process();
   }
