@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name ESP32-CAM)(type Legacy)(uri /home/mproctor/Arduino/rgb_clock/libs/LIB_ESP32-CAM/ESP32-CAM/KiCad/ESP32-CAM.lib)(options "")(descr ""))
+)

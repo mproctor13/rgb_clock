@@ -1,0 +1,299 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L Connector:Conn_01x02_Male J1
+U 1 1 5FFA43D1
+P 4350 2650
+F 0 "J1" H 4458 2831 50  0000 C CNN
+F 1 "power port" H 4458 2740 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 4350 2650 50  0001 C CNN
+F 3 "~" H 4350 2650 50  0001 C CNN
+	1    4350 2650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5850 2650 5100 2650
+Wire Wire Line
+	4550 2750 5850 2750
+$Comp
+L power:GND #PWR0101
+U 1 1 5FFAD5AD
+P 7200 3350
+F 0 "#PWR0101" H 7200 3100 50  0001 C CNN
+F 1 "GND" H 7205 3177 50  0000 C CNN
+F 2 "" H 7200 3350 50  0001 C CNN
+F 3 "" H 7200 3350 50  0001 C CNN
+	1    7200 3350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0102
+U 1 1 5FFAE9FD
+P 4550 2750
+F 0 "#PWR0102" H 4550 2500 50  0001 C CNN
+F 1 "GND" H 4555 2577 50  0000 C CNN
+F 2 "" H 4550 2750 50  0001 C CNN
+F 3 "" H 4550 2750 50  0001 C CNN
+	1    4550 2750
+	1    0    0    -1  
+$EndComp
+Connection ~ 4550 2750
+$Comp
+L power:GND #PWR0103
+U 1 1 5FFAE21C
+P 7200 2950
+F 0 "#PWR0103" H 7200 2700 50  0001 C CNN
+F 1 "GND" H 7205 2777 50  0000 C CNN
+F 2 "" H 7200 2950 50  0001 C CNN
+F 3 "" H 7200 2950 50  0001 C CNN
+	1    7200 2950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7050 2850 8450 2850
+Wire Wire Line
+	8450 2850 8450 3050
+$Comp
+L power:GND #PWR0104
+U 1 1 5FFB3332
+P 8550 3150
+F 0 "#PWR0104" H 8550 2900 50  0001 C CNN
+F 1 "GND" H 8555 2977 50  0000 C CNN
+F 2 "" H 8550 3150 50  0001 C CNN
+F 3 "" H 8550 3150 50  0001 C CNN
+	1    8550 3150
+	1    0    0    -1  
+$EndComp
+$Comp
+L ESP32-CAM:ESP32-CAM IC1
+U 1 1 5FFA18B3
+P 5850 2650
+F 0 "IC1" H 6450 2915 50  0000 C CNN
+F 1 "ESP32-CAM" H 6450 2824 50  0000 C CNN
+F 2 "ESP32-CAM:ESP32CAM" H 6900 2750 50  0001 L CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Ai-Thinker-ESP32-CAM_C277946.pdf" H 6900 2650 50  0001 L CNN
+F 4 "Modules PCBA Module RoHS" H 6900 2550 50  0001 L CNN "Description"
+F 5 "5" H 6900 2450 50  0001 L CNN "Height"
+F 6 "Ai-Thinker" H 6900 2350 50  0001 L CNN "Manufacturer_Name"
+F 7 "ESP32-CAM" H 6900 2250 50  0001 L CNN "Manufacturer_Part_Number"
+F 8 "" H 6900 2150 50  0001 L CNN "Mouser Part Number"
+F 9 "" H 6900 2050 50  0001 L CNN "Mouser Price/Stock"
+F 10 "" H 6900 1950 50  0001 L CNN "Arrow Part Number"
+F 11 "" H 6900 1850 50  0001 L CNN "Arrow Price/Stock"
+	1    5850 2650
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R1
+U 1 1 5FFBB081
+P 4800 3850
+F 0 "R1" H 4870 3896 50  0000 L CNN
+F 1 "R" H 4870 3805 50  0000 L CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical" V 4730 3850 50  0001 C CNN
+F 3 "~" H 4800 3850 50  0001 C CNN
+	1    4800 3850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5850 3250 4800 3250
+Wire Wire Line
+	4800 3250 4800 3700
+$Comp
+L Connector:Conn_01x01_Male J2
+U 1 1 5FFBEBF7
+P 4600 4000
+F 0 "J2" H 4708 4181 50  0000 C CNN
+F 1 "RGB Data" H 4708 4090 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical" H 4600 4000 50  0001 C CNN
+F 3 "~" H 4600 4000 50  0001 C CNN
+	1    4600 4000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7050 1600 7050 2650
+Wire Wire Line
+	6300 1800 6300 2300
+Wire Wire Line
+	6300 2300 5350 2300
+Wire Wire Line
+	5350 2300 5350 3150
+Wire Wire Line
+	5350 3150 5700 3150
+Wire Wire Line
+	5900 1900 5850 2450
+Wire Wire Line
+	5850 2450 5500 2450
+Wire Wire Line
+	5500 2450 5500 3050
+Wire Wire Line
+	5500 3050 5600 3050
+$Comp
+L power:GND #PWR0106
+U 1 1 5FFC3818
+P 6200 4700
+F 0 "#PWR0106" H 6200 4450 50  0001 C CNN
+F 1 "GND" H 6205 4527 50  0000 C CNN
+F 2 "" H 6200 4700 50  0001 C CNN
+F 3 "" H 6200 4700 50  0001 C CNN
+	1    6200 4700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7750 4600 7750 2650
+Connection ~ 7050 2650
+Connection ~ 5600 3050
+Wire Wire Line
+	5600 3050 5850 3050
+Connection ~ 5700 3150
+Wire Wire Line
+	5700 3150 5850 3150
+$Comp
+L Connector:Conn_01x02_Male J5
+U 1 1 5FFB0360
+P 8250 3050
+F 0 "J5" H 8358 3231 50  0000 C CNN
+F 1 "Program" H 8358 3140 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 8250 3050 50  0001 C CNN
+F 3 "~" H 8250 3050 50  0001 C CNN
+	1    8250 3050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0107
+U 1 1 5FFD10BB
+P 8950 4500
+F 0 "#PWR0107" H 8950 4250 50  0001 C CNN
+F 1 "GND" H 8955 4327 50  0000 C CNN
+F 2 "" H 8950 4500 50  0001 C CNN
+F 3 "" H 8950 4500 50  0001 C CNN
+	1    8950 4500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5100 3700 5100 2650
+Connection ~ 5100 2650
+Wire Wire Line
+	5100 2650 4550 2650
+Wire Wire Line
+	8850 4200 8850 2650
+Wire Wire Line
+	7050 2650 7750 2650
+Connection ~ 7750 2650
+Wire Wire Line
+	7750 2650 8850 2650
+Wire Wire Line
+	9150 4400 9150 3450
+Wire Wire Line
+	9150 3450 7550 3450
+Wire Wire Line
+	7550 3450 7550 3250
+Wire Wire Line
+	7550 3250 7050 3250
+Wire Wire Line
+	7050 3150 7650 3150
+Wire Wire Line
+	7650 3150 7650 3400
+Wire Wire Line
+	7650 3400 9050 3400
+Wire Wire Line
+	9050 3400 9050 4300
+Text Notes 5650 4750 0    50   ~ 0
+GND
+Wire Wire Line
+	5900 1600 7050 1600
+$Comp
+L Connector:Conn_01x04_Male J3
+U 1 1 5FFB5762
+P 5700 1700
+F 0 "J3" H 5808 1981 50  0000 C CNN
+F 1 "Lux_connector" H 5808 1890 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" H 5700 1700 50  0001 C CNN
+F 3 "~" H 5700 1700 50  0001 C CNN
+	1    5700 1700
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0105
+U 1 1 5FFC1CEF
+P 6000 1700
+F 0 "#PWR0105" H 6000 1450 50  0001 C CNN
+F 1 "GND" H 6005 1527 50  0000 C CNN
+F 2 "" H 6000 1700 50  0001 C CNN
+F 3 "" H 6000 1700 50  0001 C CNN
+	1    6000 1700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5900 1800 6300 1800
+Wire Wire Line
+	5900 1700 6000 1700
+Wire Wire Line
+	8450 3150 8550 3150
+Wire Wire Line
+	7050 2950 7200 2950
+Wire Wire Line
+	5700 3900 5700 3150
+Wire Wire Line
+	6000 3900 5700 3900
+$Comp
+L Connector:Conn_01x04_Female J4
+U 1 1 5FFB3C36
+P 6000 4500
+F 0 "J4" H 6028 4476 50  0000 L CNN
+F 1 "Environment_Connector" H 6028 4385 50  0000 L CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical" H 6000 4500 50  0001 C CNN
+F 3 "~" H 6000 4500 50  0001 C CNN
+	1    6000 4500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7050 3350 7200 3350
+Wire Wire Line
+	6200 4700 5800 4700
+Wire Wire Line
+	6000 3900 6000 4400
+Wire Wire Line
+	6000 4400 5800 4400
+Wire Wire Line
+	5600 4500 5800 4500
+Wire Wire Line
+	5600 3050 5600 4500
+Wire Wire Line
+	5800 4600 7750 4600
+Wire Wire Line
+	5100 3700 8400 3700
+Wire Wire Line
+	8400 3700 9300 4000
+Wire Wire Line
+	9300 4500 8950 4500
+Wire Wire Line
+	9300 4400 9150 4400
+Wire Wire Line
+	9300 4300 9050 4300
+Wire Wire Line
+	9300 4200 8850 4200
+$Comp
+L Connector:Conn_01x06_Female J6
+U 1 1 5FFD072F
+P 9500 4200
+F 0 "J6" H 9528 4176 50  0000 L CNN
+F 1 "Programmer" H 9528 4085 50  0000 L CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x06_P2.54mm_Vertical" H 9500 4200 50  0001 C CNN
+F 3 "~" H 9500 4200 50  0001 C CNN
+	1    9500 4200
+	1    0    0    -1  
+$EndComp
+$EndSCHEMATC
