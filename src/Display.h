@@ -8,12 +8,15 @@ class Display {
   CRGB *getPixels();
   void setup(uint8_t digits, int show_pixels=22+18+18, uint8_t pixel_per_segment=9, uint8_t pixel_per_dot=5);
   void handle_display(int loop_counter);
-  void digit(int number,int start_offset);
+  void digit(int number,int start_offset,struct CHSV current_brightness);
   void dots(struct CHSV color);
   void set_display(int hour, int minute, int second);
   void clear_digit(int start_offset);
   void show_temp(bool celsius);
   void allOff();
+  void allOn();
+  void allOn(int red, int green, int blue);
+  void show();
   void set_brightness(int bightness){current_bightness=bightness;};
   int get_brightness(){return current_bightness;};
   static void loop(void * parameter);

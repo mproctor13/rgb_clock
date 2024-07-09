@@ -2,9 +2,13 @@
 #include "Display.h"
 #include "TimeUtil.h"
 #include "BMESensor.h"
+#include <ESPUI.h>
+#include "Config.h"
 #define DATA_PIN 2
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
+extern bool USE_HARDWARE;
+extern Config config;
 
 Display::Display(){
   show_brightness=255;
@@ -45,14 +49,34 @@ void Display::setup(uint8_t digits, int show_pixels, uint8_t pixel_per_segment, 
   Serial.print("Malloc of ");
   Serial.println(sizeof(CRGB) * num_pixels);
   pixels = (CRGB*) malloc(sizeof(CRGB) * num_pixels);
-  FastLED.addLeds<WS2812, DATA_PIN, GRB>(pixels, num_pixels);
+  if( USE_HARDWARE )
+    FastLED.addLeds<WS2812, DATA_PIN, GRB>(pixels, num_pixels);
   allOff();
   fill_solid(pixels, show_pixels, CRGB::White);
-  FastLED.show();
+  if( USE_HARDWARE )
+    FastLED.show();
 }
 
 void Display::allOff(){
   fill_solid(pixels, num_pixels, CRGB::Black);
+}
+
+void Display::allOn(){
+  fill_solid(pixels, num_pixels, CRGB::White);
+}
+
+void Display::allOn(int red, int green, int blue){
+  CRGB crgb;
+
+  crgb.red = red;
+  crgb.green = green;
+  crgb.blue = blue;
+  fill_solid(pixels, num_pixels, crgb);
+}
+
+void Display::show(){
+  if( USE_HARDWARE )
+    FastLED.show();
 }
 
 void Display::loop(void * parameter) {
@@ -68,10 +92,11 @@ void Display::loop(void * parameter) {
 
 void Display::handle_display(int loop_counter){
   extern TimeUtil timeutil;
+  extern uint16_t clock_ui;
 
   if(loop_counter % 1000 == 0){ // Every Second
     if(loop_second > 15 && loop_second <= 20){
-      show_temp(false);
+      show_temp(config.celsius);
     }
     else if(loop_second > 20 && loop_second <= 25){
       show_humidity();
@@ -87,6 +112,9 @@ void Display::handle_display(int loop_counter){
     else{
       dots(active_color()); // Dots Primary Color
     }
+    char stylecol[100];
+    sprintf(stylecol, "font-size: 80px; background-color: unset; color: %s;", active_color_html() );
+    ESPUI.setElementStyle(clock_ui, stylecol);
     loop_second++;
   }
   if(loop_counter % 10000 == 0){ // Every 10 Seconds
@@ -96,24 +124,27 @@ void Display::handle_display(int loop_counter){
     loop_second=0;
   }
   rotate_color();
-  FastLED.show();
+  if( USE_HARDWARE )
+    FastLED.show();
   labelHue++;
 }
 
 struct CHSV Display::active_color(bool debug){
   extern TimeUtil timeutil;
+  extern Config config;
   uint8_t color = timeutil.clock_min()%8;
   if((timeutil.clock_hour() == 4 || 
       timeutil.clock_hour() == 16)  && 
       timeutil.clock_min() == 20){
     color = 96;
   }
-  if( debug ){
+  if( config.debug ){
     Serial.print("Current brightness: ");
     Serial.print(current_bightness);
-    Serial.print("and color: ");
+    Serial.print(" and color: ");
     Serial.println(color);
   }
+  // return CHSV(color, 255, current_bightness);
   return CHSV(color_set[color], 255, current_bightness);
 }
 
@@ -121,15 +152,17 @@ char *Display::active_color_html(){
   CRGB crgb;
 
   hsv2rgb_rainbow(active_color(), crgb);
-      
+  
   sprintf(color,"#%02X%02X%02X", crgb.red, crgb.green, crgb.blue);
   return color;
 }
 
 void Display::show_temp(bool celsius){
   extern BMESensor *bme;
+  extern Config config;
   int tempature;
   int type_offset;
+  struct CHSV current_color = active_color();
 
   if( bme->have_data() ){
     if( celsius ){
@@ -141,147 +174,194 @@ void Display::show_temp(bool celsius){
     fill_solid(pixels+show_pixels, num_pixels-show_pixels, CRGB::Black);
     if(tempature > 100){
       type_offset = show_pixels+21*pixel_per_segment+pixel_per_dot*2;
-      digit(tempature/100, show_pixels);
-      digit((tempature-100)/10, show_pixels+7*pixel_per_segment);
-      digit(tempature%10, show_pixels+21*pixel_per_segment+pixel_per_dot*2);
+      digit(tempature/100, show_pixels, current_color);
+      digit((tempature-100)/10, show_pixels+7*pixel_per_segment, current_color);
+      digit(tempature%10, show_pixels+21*pixel_per_segment+pixel_per_dot*2, current_color);
+      if( config.debug ){
+        Serial.print("tempature:[ ] [");
+        Serial.print(tempature/100);
+        Serial.print("]");
+        Serial.print("[");
+        Serial.print((tempature-100)/10);
+        Serial.print("]");
+        Serial.print("[");
+        Serial.print(tempature%10);
+        Serial.println("]");
+      }
     }
     else{
-      digit(tempature/10, show_pixels);  Serial.print("show brightness: ");
-//  Serial.println(t);
-      digit(tempature%10, show_pixels+7*pixel_per_segment);
+      digit(tempature/10, show_pixels, current_color);
+      digit(tempature%10, show_pixels+7*pixel_per_segment, current_color);
       type_offset = show_pixels+14*pixel_per_segment+pixel_per_dot*2;
+      if( config.debug ){
+        Serial.print("tempature:[");
+        Serial.print(tempature/10);
+        Serial.print("]");
+        Serial.print("[");
+        Serial.print(tempature%10);
+        Serial.println("]");
+      }
     }
     if( celsius ){
       //MIDDLESEGMENT
-      fill_solid(pixels+type_offset+6*pixel_per_segment, pixel_per_segment, active_color());
+      fill_solid(pixels+type_offset+6*pixel_per_segment, pixel_per_segment, current_color);
       
       //LOWERLEFTSEGMENT
-      fill_solid(pixels+type_offset+2*pixel_per_segment, pixel_per_segment, active_color());
+      fill_solid(pixels+type_offset+2*pixel_per_segment, pixel_per_segment, current_color);
       
       //LOWERSEGMENT
-      fill_solid(pixels+type_offset+1*pixel_per_segment, pixel_per_segment, active_color());
+      fill_solid(pixels+type_offset+1*pixel_per_segment, pixel_per_segment, current_color);
     }
     else{
       //UPPER SEGMENT
-      fill_solid(pixels+type_offset+4*pixel_per_segment, pixel_per_segment, active_color());
+      fill_solid(pixels+type_offset+4*pixel_per_segment, pixel_per_segment, current_color);
       
       //UPPERLEFTSEGMENT
-      fill_solid(pixels+type_offset+3*pixel_per_segment, pixel_per_segment, active_color());
+      fill_solid(pixels+type_offset+3*pixel_per_segment, pixel_per_segment, current_color);
       
       //MIDDLESEGMENT
-      fill_solid(pixels+type_offset+6*pixel_per_segment, pixel_per_segment, active_color());
+      fill_solid(pixels+type_offset+6*pixel_per_segment, pixel_per_segment, current_color);
       
       //LOWERLEFTSEGMENT
-      fill_solid(pixels+type_offset+2*pixel_per_segment, pixel_per_segment, active_color());
+      fill_solid(pixels+type_offset+2*pixel_per_segment, pixel_per_segment, current_color);
     }
   }
 }
 
 void Display::show_humidity(){
   extern BMESensor *bme;
+  extern Config config;
   int humidity;
   int start_offset;
+  struct CHSV current_color = active_color();
 
   if( bme->have_data() ){
     humidity = bme->get_humidity();
     fill_solid(pixels+show_pixels, num_pixels-show_pixels, CRGB::Black);
-    digit(humidity/10, show_pixels);
-    digit(humidity%10, show_pixels+7*pixel_per_segment);
-    Serial.print("humidity:[");
-    Serial.print(humidity/10);
-    Serial.print("]");
-    Serial.print("[");
-    Serial.print(humidity%10);
-    Serial.println("]");
+    digit(humidity/10, show_pixels, current_color);
+    digit(humidity%10, show_pixels+7*pixel_per_segment, current_color);
+    if( config.debug ){
+      Serial.print("humidity:[");
+      Serial.print(humidity/10);
+      Serial.print("]");
+      Serial.print("[");
+      Serial.print(humidity%10);
+      Serial.println("]");
+    }
     start_offset = show_pixels+14*pixel_per_segment+pixel_per_dot*2;
     //UPPER SEGMENT
-    fill_solid(pixels+start_offset+4*pixel_per_segment, pixel_per_segment, active_color());
+    fill_solid(pixels+start_offset+4*pixel_per_segment, pixel_per_segment, current_color);
 
     //UPPERLEFTSEGMENT
-    fill_solid(pixels+start_offset+3*pixel_per_segment, pixel_per_segment, active_color());
+    fill_solid(pixels+start_offset+3*pixel_per_segment, pixel_per_segment, current_color);
     
     //UPPERRIGHTSEGMENT
-    fill_solid(pixels+start_offset+5*pixel_per_segment, pixel_per_segment, active_color());
+    fill_solid(pixels+start_offset+5*pixel_per_segment, pixel_per_segment, current_color);
 
     //MIDDLESEGMENT
-    fill_solid(pixels+start_offset+6*pixel_per_segment, pixel_per_segment, active_color());
+    fill_solid(pixels+start_offset+6*pixel_per_segment, pixel_per_segment, current_color);
 
     start_offset = show_pixels+21*pixel_per_segment+pixel_per_dot*2;
     //MIDDLESEGMENT
-    fill_solid(pixels+start_offset+6*pixel_per_segment, pixel_per_segment, active_color());
+    fill_solid(pixels+start_offset+6*pixel_per_segment, pixel_per_segment, current_color);
 
     //LOWERLEFTSEGMENT
-    fill_solid(pixels+start_offset+2*pixel_per_segment, pixel_per_segment, active_color());
+    fill_solid(pixels+start_offset+2*pixel_per_segment, pixel_per_segment, current_color);
 
     //LOWERRIGHTSEGMENT
-    fill_solid(pixels+start_offset+0*pixel_per_segment, pixel_per_segment, active_color());
+    fill_solid(pixels+start_offset+0*pixel_per_segment, pixel_per_segment, current_color);
 
     //LOWERSEGMENT
-    fill_solid(pixels+start_offset+1*pixel_per_segment, pixel_per_segment, active_color());
+    fill_solid(pixels+start_offset+1*pixel_per_segment, pixel_per_segment, current_color);
   }
 }
 
 void Display::set_display(int hour, int minute, int second) {
+  extern uint16_t clock_ui;
+  extern Config config;
+  char digit1[15];
+  char digit2[15];
+  struct CHSV current_color = active_color();
   // ***************** Start Hour ***************** 
-  Serial.print("[");
-   if(hour > 9){
-    Serial.print(hour/10);
-    digit(hour/10, show_pixels);
+  if( config.debug )
+    Serial.print("[");
+  if(hour > 9){
+    if( config.debug )
+      Serial.print(hour/10);
+    digit(hour/10, show_pixels, current_color);
+    sprintf(digit1, "%i", hour/10);
   }
   else{
-    Serial.print(" ");
+    if( config.debug )
+      Serial.print(" ");
     clear_digit(show_pixels);
+    sprintf(digit1, "<nbsp>");
   }
-  Serial.print("]");
-  
-  Serial.print("[");
+  if( config.debug )
+    Serial.print("][");
   if(hour != 0){
-    Serial.print(hour%10);
-    digit(hour%10, show_pixels+7*pixel_per_segment);
+    if( config.debug )
+      Serial.print(hour%10);
+    digit(hour%10, show_pixels+7*pixel_per_segment, current_color);
+    sprintf(digit2, "%i", hour%10);
   }
   else{
-    Serial.print(" ");
+    if( config.debug )
+      Serial.print(" ");
     clear_digit(show_pixels+7*pixel_per_segment);
+    sprintf(digit2, "<nbsp>");
   }
-  Serial.print("]:");
+  if( config.debug )
+    Serial.print("]:");
   
   // ***************** End Hour ***************** 
   // ***************** Start Minute ***************
-  Serial.print("[");
-  Serial.print(minute/10);
-  digit(minute/10, show_pixels+14*pixel_per_segment+pixel_per_dot*2);
-  Serial.print("]");
-  
-  Serial.print("[");
+  if( config.debug ){
+    Serial.print("[");
+    Serial.print(minute/10);
+  }
+  digit(minute/10, show_pixels+14*pixel_per_segment+pixel_per_dot*2, current_color);
+  if( config.debug )
+    Serial.print("][");
   if(minute > 10){
-    Serial.print(minute%10);
-    digit(minute%10, show_pixels+21*pixel_per_segment+pixel_per_dot*2);
+    if( config.debug )
+      Serial.print(minute%10);
+    digit(minute%10, show_pixels+21*pixel_per_segment+pixel_per_dot*2, current_color);
   }
   else{
-    Serial.print(minute%10);
-    digit(minute%10, show_pixels+21*pixel_per_segment+pixel_per_dot*2);
+    if( config.debug )
+      Serial.print(minute%10);
+    digit(minute%10, show_pixels+21*pixel_per_segment+pixel_per_dot*2, current_color);
   }
   // *****************  End Minute ***************** 
   if( digits == 6 ){
-    Serial.print("]");
     // ***************** Start Seconds ***************** 
-    Serial.print(":[");
-    Serial.print(second/10);
-    digit(second/10, show_pixels+28*pixel_per_segment+pixel_per_dot*4);
-    Serial.print("]");
+    if( config.debug ){
+      Serial.print("]:[");
+      Serial.print(second/10);
+    }
+    digit(second/10, show_pixels+28*pixel_per_segment+pixel_per_dot*4, current_color);
+    if( config.debug )
+      Serial.print("][");
     
-    Serial.print("[");
     if(second > 9){
-      Serial.print(second%10);
-      digit(second%10, show_pixels+35*pixel_per_segment+pixel_per_dot*4);
+      if( config.debug )
+        Serial.print(second%10);
+      digit(second%10, show_pixels+35*pixel_per_segment+pixel_per_dot*4, current_color);
     }
     else{
-      Serial.print(second);
-      digit(second, show_pixels+35*pixel_per_segment+pixel_per_dot*4);
+      if( config.debug )
+        Serial.print(second);
+      digit(second, show_pixels+35*pixel_per_segment+pixel_per_dot*4, current_color);
     }
     // End Seconds
   }
-  Serial.println("] ");
+  char time_text[20];
+  sprintf(time_text, "%s%s:%02d:%02d", digit1, digit2,minute,second);
+  ESPUI.print(clock_ui, time_text);
+
+  if( config.debug )
+    Serial.println("] ");
 }
 
 
@@ -302,49 +382,47 @@ void Display::clear_digit(int start_offset) {
   fill_solid(pixels+start_offset, 7*pixel_per_segment, CRGB::Black);
 }
 
-void Display::digit(int number,int start_offset) {
+void Display::digit(int number,int start_offset,struct CHSV current_color) {
   fill_solid(pixels+start_offset, pixel_per_segment*7, CRGB::Black);
-//  Serial.print("Showing Number: ");
-//  Serial.println(number);
   //UPPER SEGMENT
   if (number == 0 || number == 2 || number == 3 || number == 5 || 
         number == 6 || number == 7 || number == 8 || number == 9) {
-    fill_solid(pixels+start_offset+4*pixel_per_segment, pixel_per_segment, active_color());
+    fill_solid(pixels+start_offset+4*pixel_per_segment, pixel_per_segment, current_color);
   }
 
   //UPPERLEFTSEGMENT
   if (number == 0 || number == 4 || number == 5 || 
         number == 6 || number == 8 || number == 9) {
-    fill_solid(pixels+start_offset+3*pixel_per_segment, pixel_per_segment, active_color());
+    fill_solid(pixels+start_offset+3*pixel_per_segment, pixel_per_segment, current_color);
   }
 
   //UPPERRIGHTSEGMENT
   if (number == 0 || number == 1 || number == 2 || number == 3 || 
         number == 4 || number == 7 || number == 8 || number == 9) {
-    fill_solid(pixels+start_offset+5*pixel_per_segment, pixel_per_segment, active_color());
+    fill_solid(pixels+start_offset+5*pixel_per_segment, pixel_per_segment, current_color);
   }
 
   //MIDDLESEGMENT
   if (number == 2 || number == 3 || number == 4 || 
         number == 5 || number == 6 || number == 8 || number == 9) {
-    fill_solid(pixels+start_offset+6*pixel_per_segment, pixel_per_segment, active_color());
+    fill_solid(pixels+start_offset+6*pixel_per_segment, pixel_per_segment, current_color);
   }
 
   //LOWERLEFTSEGMENT
   if (number == 0 || number == 2 || number == 6 || number == 8) {
-    fill_solid(pixels+start_offset+2*pixel_per_segment, pixel_per_segment, active_color());
+    fill_solid(pixels+start_offset+2*pixel_per_segment, pixel_per_segment, current_color);
   }
 
   //LOWERRIGHTSEGMENT
   if (number == 0 || number == 1 || number == 3 || number == 4 || 
         number == 5 || number == 6 || number == 7 || number == 8 || number == 9) {
-    fill_solid(pixels+start_offset+0*pixel_per_segment, pixel_per_segment, active_color());
+    fill_solid(pixels+start_offset+0*pixel_per_segment, pixel_per_segment, current_color);
   }
 
   //LOWERSEGMENT
   if (number == 0 || number == 2 || number == 3 || 
         number == 5 || number == 6 || number == 8 || number == 9) {
-    fill_solid(pixels+start_offset+1*pixel_per_segment, pixel_per_segment, active_color());
+    fill_solid(pixels+start_offset+1*pixel_per_segment, pixel_per_segment, current_color);
   }
 
   // This sends the updated pixel color to the hardware.
@@ -357,7 +435,8 @@ CRGB* Display::getPixels(){
 
 void Display::nextPattern(){
   // add one to the current pattern number, and wrap around at the end
-//  currentPatternNumber = (currentPatternNumber + 1) % ARRAY_SIZE( patterns );
+  // currentPatternNumber = (currentPatternNumber + 1) % ARRAY_SIZE( patterns );
+  // showPatterns[currentPatternNumber]();
 }
 
 void Display::rotate_color(){

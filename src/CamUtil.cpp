@@ -60,6 +60,37 @@ bool initCamera(){
   return true;
 }
 
+void cameraTask(void * parameter){
+  Serial.print("CameraTask running on core ");
+  Serial.println(xPortGetCoreID());
+
+  AsyncWebServer server(81);
+
+	server.on("/rand", HTTP_GET, [](AsyncWebServerRequest *request){
+		request->send(200, "text/plain", String(random(8)));
+  });
+	server.begin();
+	if( initCamera()){
+		Serial.println("camera initialized!");
+		// cameraServer->on("/bmp", HTTP_GET, sendBMP);
+		// // cameraServer->on("/bmp", HTTP_GET, sendBMP);
+		server.on("/capture", HTTP_GET, sendJpg);
+		// cameraServer->on("/stream", HTTP_GET, streamJpg);
+		// cameraServer->on("/control", HTTP_GET, setCameraVar);
+		server.on("/status", HTTP_GET, getCameraStatus);
+		for(;;){ // infinite loop
+			digitalWrite(4, HIGH);
+			Serial.println("Camera Looping...");
+			delay(1000);
+			digitalWrite(4, LOW);
+			delay(1000);
+		}
+	}
+	else{
+		Serial.printf("Failed to initialize camera...");
+	}
+}
+
 
 void sendBMP(AsyncWebServerRequest *request){
     camera_fb_t * fb = esp_camera_fb_get();

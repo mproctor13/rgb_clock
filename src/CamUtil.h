@@ -206,6 +206,7 @@ class AsyncJpegStreamResponse: public AsyncAbstractResponse {
 };
 
 bool initCamera();
+void cameraTask(void * parameter);
 void sendBMP(AsyncWebServerRequest *request);
 void sendJpg(AsyncWebServerRequest *request);
 void streamJpg(AsyncWebServerRequest *request);
